@@ -14,7 +14,7 @@ P_sun = sigma * (T_sun**4)
 st.title("🌡️ 黑體輻射與人類視覺敏感度模擬")
 st.markdown("---")
 
-# 1. 數值輸入框 (直接輸入 K)
+# 1. 數值輸入框
 temp_k = st.number_input("請輸入絕對溫度 (Kelvin):", min_value=100, max_value=20000, value=5773, step=100)
 
 # 2. 物理計算
@@ -22,7 +22,7 @@ total_intensity = sigma * (temp_k**4)
 ratio_to_sun = total_intensity / P_sun
 peak_wave_nm = (2.898e-3 / temp_k) * 1e9
 
-# 3. 數據分析顯示 (顯示於上方)
+# 3. 數據分析顯示
 st.subheader("📊 實驗數據分析")
 col1, col2 = st.columns(2)
 with col1:
@@ -31,13 +31,13 @@ with col1:
 with col2:
     st.metric("相對於太陽比值", f"{ratio_to_sun:.3f} 倍")
 
-# 4. 繪圖準備 (範圍涵蓋紫外光到紅外光)
+# 4. 繪圖準備
 waves_nm = np.linspace(300, 2000, 1000)
 waves_m = waves_nm * 1e-9
 with np.errstate(over='ignore', divide='ignore'):
     intensity = (2 * h * c**2) / (waves_m**5 * (np.exp((h * c) / (waves_m * kB * temp_k)) - 1))
 
-# 🌟 模擬錐狀細胞敏感曲線 (S, M, L)
+# 模擬錐狀細胞敏感曲線公式
 def cone_sensitivity(x, peak, width):
     return np.exp(-0.5 * ((x - peak) / width)**2)
 
@@ -48,18 +48,27 @@ fig, ax = plt.subplots(figsize=(10, 6))
 vis_min, vis_max = 400, 700
 for w in range(vis_min, vis_max):
     color = plt.cm.rainbow((w - vis_min) / (vis_max - vis_min))
-    ax.axvspan(w, w+1, color=color, alpha=0.2, lw=0)
+    ax.axvspan(w, w+1, color=color, alpha=0.15, lw=0)
 
 # 繪製黑體輻射曲線
 ax.plot(waves_nm, intensity, color='black', lw=3, label='Blackbody Spectrum', zorder=10)
 
-# 使用次座標軸標繪錐狀細胞 (因為量級不同)
+# 使用次座標軸標繪 S, M, L 錐狀細胞
 ax2 = ax.twinx()
-ax2.plot(waves_nm, cone_sensitivity(waves_nm, 570, 45), color='red', lw=1.5, ls='--', alpha=0.5, label='L-Cone (Red)')
-ax2.plot(waves_nm, cone_sensitivity(waves_nm, 545, 40), color='green', lw=1.5, ls='--', alpha=0.5, label='M-Cone (Green)')
-ax2.plot(waves_nm, cone_sensitivity(waves_nm, 440, 30), color='blue', lw=1.5, ls='--', alpha=0.5, label='S-Cone (Blue)')
+# L: Long-wave (Red)
+ax2.plot(waves_nm, cone_sensitivity(waves_nm, 570, 45), color='red', lw=1.5, ls='--', alpha=0.6, label='L-Cone (Red)')
+# M: Medium-wave (Green)
+ax2.plot(waves_nm, cone_sensitivity(waves_nm, 545, 40), color='green', lw=1.5, ls='--', alpha=0.6, label='M-Cone (Green)')
+# S: Short-wave (Blue)
+ax2.plot(waves_nm, cone_sensitivity(waves_nm, 440, 30), color='blue', lw=1.5, ls='--', alpha=0.6, label='S-Cone (Blue)')
+
+# 加上文字標籤 (S, M, L)
+ax2.text(585, 0.95, 'L', color='red', fontweight='bold', fontsize=12)
+ax2.text(540, 0.95, 'M', color='green', fontweight='bold', fontsize=12)
+ax2.text(430, 0.95, 'S', color='blue', fontweight='bold', fontsize=12)
+
 ax2.set_ylim(0, 1.5)
-ax2.set_yticks([]) # 隱藏次座標刻度讓畫面乾淨
+ax2.set_yticks([]) # 隱藏數值，純看形狀
 
 # 圖表美化
 ax.set_xlabel("Wavelength (nm)", fontsize=12)
@@ -67,7 +76,12 @@ ax.set_ylabel("Spectral Radiance", fontsize=12)
 ax.set_xlim(350, 1500)
 ax.set_ylim(0, np.max(intensity) * 1.1)
 ax.grid(True, linestyle=':', alpha=0.5)
+ax.legend(loc='upper right', fontsize='small')
 
 st.pyplot(fig)
 
-st.info("💡 **教學提示：** 觀察黑體輻射峰值與三種視覺細胞敏感區（虛線）的重疊。太陽 (5773K) 的能量峰值正好落在人類視覺最靈敏的區域！")
+st.markdown("""
+### 💡 教學重點觀察：
+1. **S-M-L 錐狀細胞**：分別對應短、中、長波長，這是人類感受色彩的基礎。
+2. **生物演化連結**：當溫度設為 **5773 K** (太陽) 時，請注意黑體輻射的最強峰值位置，是否剛好與 **M** 和 **L** 細胞最敏感的區域重疊？
+3. **燈泡與視覺**：若輸入 **2773 K**，會發現大部分能量移向右側，遠離了 **S-M-L** 敏感區，因此效率極低。
