@@ -31,7 +31,7 @@ with col1:
 with col2:
     st.metric("相對於太陽比值", f"{ratio_to_sun:.3f} 倍")
 
-# 4. 繪圖準備
+# 4. 繪圖準備 (範圍 300-2000nm 以涵蓋主要視覺區)
 waves_nm = np.linspace(300, 2000, 1000)
 waves_m = waves_nm * 1e-9
 with np.errstate(over='ignore', divide='ignore'):
@@ -50,39 +50,40 @@ for w in range(vis_min, vis_max):
     color = plt.cm.rainbow((w - vis_min) / (vis_max - vis_min))
     ax.axvspan(w, w+1, color=color, alpha=0.15, lw=0)
 
-# 繪製黑體輻射曲線
+# 繪製黑體輻射曲線 (主軸)
 ax.plot(waves_nm, intensity, color='black', lw=3, label='Blackbody Spectrum', zorder=10)
 
 # 使用次座標軸標繪 S, M, L 錐狀細胞
 ax2 = ax.twinx()
-# L: Long-wave (Red)
-ax2.plot(waves_nm, cone_sensitivity(waves_nm, 570, 45), color='red', lw=1.5, ls='--', alpha=0.6, label='L-Cone (Red)')
-# M: Medium-wave (Green)
-ax2.plot(waves_nm, cone_sensitivity(waves_nm, 545, 40), color='green', lw=1.5, ls='--', alpha=0.6, label='M-Cone (Green)')
-# S: Short-wave (Blue)
-ax2.plot(waves_nm, cone_sensitivity(waves_nm, 440, 30), color='blue', lw=1.5, ls='--', alpha=0.6, label='S-Cone (Blue)')
+ax2.plot(waves_nm, cone_sensitivity(waves_nm, 570, 45), color='red', lw=1.5, ls='--', alpha=0.6)
+ax2.plot(waves_nm, cone_sensitivity(waves_nm, 545, 40), color='green', lw=1.5, ls='--', alpha=0.6)
+ax2.plot(waves_nm, cone_sensitivity(waves_nm, 440, 30), color='blue', lw=1.5, ls='--', alpha=0.6)
 
-# 加上文字標籤 (S, M, L)
-ax2.text(585, 0.95, 'L', color='red', fontweight='bold', fontsize=12)
-ax2.text(540, 0.95, 'M', color='green', fontweight='bold', fontsize=12)
-ax2.text(430, 0.95, 'S', color='blue', fontweight='bold', fontsize=12)
+# 🌟 標籤位置優化：懸浮於頂部 (y=1.1)，不碰到任何線 🌟
+label_y_pos = 1.1
+ax2.text(570, label_y_pos, 'L', color='red', fontweight='bold', fontsize=15, ha='center', va='bottom')
+ax2.text(545, label_y_pos, 'M', color='green', fontweight='bold', fontsize=15, ha='center', va='bottom')
+ax2.text(440, label_y_pos, 'S', color='blue', fontweight='bold', fontsize=15, ha='center', va='bottom')
 
-ax2.set_ylim(0, 1.5)
-ax2.set_yticks([]) # 隱藏數值，純看形狀
+# 設定次座標上限為 1.3，給標籤預留「天花板」空間
+ax2.set_ylim(0, 1.3)
+ax2.set_yticks([]) 
 
 # 圖表美化
 ax.set_xlabel("Wavelength (nm)", fontsize=12)
 ax.set_ylabel("Spectral Radiance", fontsize=12)
 ax.set_xlim(350, 1500)
-ax.set_ylim(0, np.max(intensity) * 1.1)
+# 主軸 Y 軸同步加高，確保黑體曲線不會遮擋到標籤
+ax.set_ylim(0, np.max(intensity) * 1.35) 
 ax.grid(True, linestyle=':', alpha=0.5)
 ax.legend(loc='upper right', fontsize='small')
 
 st.pyplot(fig)
 
-st.markdown("""
+# 6. 教學重點觀察 (依您的要求修改)
+st.markdown(f"""
 ### 💡 教學重點觀察：
-1. **S-M-L 錐狀細胞**：分別對應短、中、長波長，這是人類感受色彩的基礎。
-2. **當溫度設為 **5773 K** (太陽) 時：請注意黑體輻射的最強峰值位置與**Ｓ,M和L錐狀細胞最敏感的區域相對位置
-3. **若低色溫的暖黃光燈泡，溫度為 **2773 K**：則能量有何變化？
+1. **S-M-L 錐狀細胞**：分別對應短、中、長波長感官，這是人類感受色彩的基礎。標籤 S、M、L 已懸浮於各自曲線峰值上方。
+2. **當溫度設為 **5773 K** (太陽) 時**：請注意黑色輻射曲線的最強峰值位置。你會發現它精準地落在 **M** 與 **L** 錐狀細胞最敏感的區域之間，這體現了生物演化對太陽光環境的適應。
+3. **若低色溫的暖黃光燈泡，溫度為 **2773 K****：能量分佈會如何變化？
 """)
