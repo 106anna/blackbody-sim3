@@ -60,7 +60,7 @@ ax2.plot(waves_nm, cone_sensitivity(waves_nm, 545, 40), color='green', lw=1.5, l
 ax2.plot(waves_nm, cone_sensitivity(waves_nm, 440, 30), color='blue', lw=1.5, ls='--', alpha=0.6)
 
 # 🌟 標籤位置優化：懸浮於頂部 (y=1.1)，不碰到任何線 🌟
-label_y_pos = 1.1
+label_y_pos = 1.02
 ax2.text(570, label_y_pos, 'L', color='red', fontweight='bold', fontsize=15, ha='center', va='bottom')
 ax2.text(545, label_y_pos, 'M', color='green', fontweight='bold', fontsize=15, ha='center', va='bottom')
 ax2.text(440, label_y_pos, 'S', color='blue', fontweight='bold', fontsize=15, ha='center', va='bottom')
