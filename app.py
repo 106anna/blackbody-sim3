@@ -67,14 +67,19 @@ ax2.plot(waves_nm, cone_sensitivity(waves_nm, 545, 40), color='green', lw=1.5, l
 ax2.plot(waves_nm, cone_sensitivity(waves_nm, 440, 30), color='blue', lw=1.5, ls='--', alpha=0.6)
 ax2.tick_params(axis='y', labelcolor='gray')
 
-# 🌟 標記位置優化：移至 Peak 右側 🌟
+# 🌟 標記位置優化：M 在左側，S 與 L 在右側
 label_y_pos = 1.0   # 設為 1.0 讓它跟峰值平齊
-offset_x = 12       # 向右偏移 12nm，避免壓到線
+offset_x = 12       # 偏移量 (nm)
 
-# 使用 ha='left' (靠左對齊)，文字會出現在座標點的右邊
+# L (Long-wave)：標在 Peak 右側
 ax2.text(570 + offset_x, label_y_pos, 'L', color='red', fontweight='bold', fontsize=15, ha='left', va='center')
-ax2.text(545 + offset_x, label_y_pos, 'M', color='green', fontweight='bold', fontsize=15, ha='left', va='center')
+
+# M (Medium-wave)：標在 Peak 左側 (使用減號並設定 ha='right')
+ax2.text(545 - offset_x, label_y_pos, 'M', color='green', fontweight='bold', fontsize=15, ha='right', va='center')
+
+# S (Short-wave)：標在 Peak 右側
 ax2.text(440 + offset_x, label_y_pos, 'S', color='blue', fontweight='bold', fontsize=15, ha='left', va='center')
+
 # 設定軸範圍與美化
 ax1.set_xlim(350, 1500)
 ax1.set_ylim(0, np.max(intensity) * 1.25) # 預留空間給標籤
