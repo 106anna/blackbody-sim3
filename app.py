@@ -83,7 +83,7 @@ ax2.text(440 + offset_x, label_y_pos, 'S', color='blue', fontweight='bold', font
 # 設定軸範圍與美化
 ax1.set_xlim(350, 1500)
 ax1.set_ylim(0, np.max(intensity) * 1.25) # 預留空間給標籤
-ax2.set_ylim(0, 1.2) # 敏感度上限設為 1.2 以騰出標籤空間
+ax2.set_ylim(0, 1.05) # 敏感度上限設為 1.05以騰出標籤空間
 ax1.grid(True, linestyle=':', alpha=0.5)
 
 # 合併圖例
