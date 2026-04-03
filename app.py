@@ -67,20 +67,14 @@ ax2.plot(waves_nm, cone_sensitivity(waves_nm, 545, 40), color='green', lw=1.5, l
 ax2.plot(waves_nm, cone_sensitivity(waves_nm, 440, 30), color='blue', lw=1.5, ls='--', alpha=0.6)
 ax2.tick_params(axis='y', labelcolor='gray')
 
-# 🌟 標籤位置優化：移至曲線右上方
-# label_y_pos 維持在 1.02，代表比峰值高一點點
-label_y_pos = 1.02 
-offset_x = 20  # 向右偏移 20nm
+# 🌟 標記位置優化：移至 Peak 右側 🌟
+label_y_pos = 1.0   # 設為 1.0 讓它跟峰值平齊
+offset_x = 12       # 向右偏移 12nm，避免壓到線
 
-# L (Long-wave)：峰值 570nm，標在 590nm 處
-ax2.text(570 + offset_x, label_y_pos, 'L', color='red', fontweight='bold', fontsize=15, ha='left', va='bottom')
-
-# M (Medium-wave)：峰值 545nm，標在 565nm 處
-ax2.text(545 + offset_x, label_y_pos, 'M', color='green', fontweight='bold', fontsize=15, ha='left', va='bottom')
-
-# S (Short-wave)：峰值 440nm，標在 460nm 處
-ax2.text(440 + offset_x, label_y_pos, 'S', color='blue', fontweight='bold', fontsize=15, ha='left', va='bottom')
-
+# 使用 ha='left' (靠左對齊)，文字會出現在座標點的右邊
+ax2.text(570 + offset_x, label_y_pos, 'L', color='red', fontweight='bold', fontsize=15, ha='left', va='center')
+ax2.text(545 + offset_x, label_y_pos, 'M', color='green', fontweight='bold', fontsize=15, ha='left', va='center')
+ax2.text(440 + offset_x, label_y_pos, 'S', color='blue', fontweight='bold', fontsize=15, ha='left', va='center')
 # 設定軸範圍與美化
 ax1.set_xlim(350, 1500)
 ax1.set_ylim(0, np.max(intensity) * 1.25) # 預留空間給標籤
