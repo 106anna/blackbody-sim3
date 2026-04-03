@@ -23,13 +23,13 @@ ratio_to_sun = total_intensity / P_sun
 peak_wave_nm = (2.898e-3 / temp_k) * 1e9
 
 # 3. 數據分析顯示 (顯示於上方)
-st.subheader("📊 實驗數據分析")
+st.subheader("📊 模擬結果")
 col1, col2 = st.columns(2)
 with col1:
-    st.metric("坡峰波長 (Peak)", f"{peak_wave_nm:.1f} nm")
+    st.metric("波峰波長 (Peak)", f"{peak_wave_nm:.1f} nm")
     st.write(f"**總輻射強度:** \n {total_intensity:.2e} W/m²")
 with col2:
-    st.metric("相對於太陽比值", f"{ratio_to_sun:.3f} 倍")
+    st.metric("相對於太陽比值", f"{ratio_to_sun:.3f} L☉")
 
 # 4. 繪圖準備
 waves_nm = np.linspace(300, 2000, 1000)
