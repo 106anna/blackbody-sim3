@@ -35,7 +35,7 @@ l_sens = cone_sensitivity(waves_nm, 570, 45)
 
 # --- 核心邏輯：計算重疊總面積 (積分) ---
 def get_integral(y, x):
-    # 相容新舊版本 NumPy，解決 AttributeError
+    # 相容新舊版本 NumPy，防止 AttributeError
     if hasattr(np, 'trapezoid'):
         return np.trapezoid(y, x)
     return np.trapz(y, x)
@@ -69,7 +69,7 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# 5. 繪製圖表
+# 5. 繪製圖表 (雙 Y 軸)
 fig, ax1 = plt.subplots(figsize=(10, 5))
 ax1.set_xlabel("Wavelength (nm)")
 ax1.set_ylabel("Radiant Intensity", color='black')
@@ -84,7 +84,7 @@ ax2.plot(waves_nm, l_sens, color='red', ls='--', alpha=0.5)
 ax2.plot(waves_nm, m_sens, color='green', ls='--', alpha=0.5)
 ax2.plot(waves_nm, s_sens, color='blue', ls='--', alpha=0.5)
 
-# 標籤位置：M 在左側，S 與 L 在右側
+# 標籤位置：M 在左側，S 與 L 在右側 (不碰到線)
 label_y = 1.0
 offset_x = 12
 ax2.text(570 + offset_x, label_y, 'L', color='red', fontweight='bold', fontsize=14, ha='left', va='center')
@@ -97,12 +97,22 @@ ax1.set_xlim(350, 850)
 ax1.legend(loc='upper right', fontsize='small')
 ax1.grid(True, alpha=0.3)
 
-# 🚀 重要修正：渲染後關閉圖表以釋放記憶體
+# 🚀 核心修正：顯示後立即關閉圖表物件，避免記憶體洩漏
 st.pyplot(fig)
 plt.close(fig) 
 
+# --- 6. 教學資訊區 ---
+st.info("""
+**💡 數據背後的科學原理：**
+* **SML 響應值**：並非直接對應圖上的「點」，而是**計算了黑色輻射能量曲線與 SML 虛線重疊部分的總面積**（即積分）。這代表了視覺細胞接收到的總刺激能量。
+* **色彩判定**：大腦根據 S:M:L 的**面積比例**來解碼色彩。
+""")
 
-
+st.markdown(f"""
+### 🎓 思考練習：
+1. **觀察黑體輻射曲線的形狀**：雖然太陽 (5773K) 的坡峰在綠色區域，但請對比黑色曲線在「短波長(左)」與「長波長(右)」的衰減速度，這如何影響了 **L 響應** 的總面積？
+2. **觀察能量偏移**：當溫度調低至燈泡 (2773K) 時，黑色輻射曲線與 **S、M、L** 三條虛線的重疊面積分別發生了什麼變化？這與我們看到的橘黃色有什麼關聯？
+""")
 # 6. 教學重點觀察 (依您的要求修改)
 st.markdown(f"""
 ### 💡 教學重點觀察：
