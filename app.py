@@ -3,94 +3,105 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # 網頁基本設定
-st.set_page_config(page_title="黑體輻射與人類視覺模擬", layout="centered")
+st.set_page_config(page_title="黑體輻射與色彩解碼器", layout="centered")
 
-# --- 物理常數與基準值 ---
+# --- 物理常數 ---
 h, c, kB = 6.626e-34, 3.0e8, 1.38e-23
 sigma = 5.67e-8  
 T_sun = 5773     
-P_sun = sigma * (T_sun**4) 
 
-st.title("🌡️ 黑體輻射與人類視覺敏感度模擬")
+st.title("🌡️ 黑體輻射：從物理能量到眼睛色彩")
 st.markdown("---")
 
 # 1. 數值輸入框
 temp_k = st.number_input("請輸入絕對溫度 (Kelvin):", min_value=100, max_value=20000, value=5773, step=100)
 
-# 2. 物理計算
-total_intensity = sigma * (temp_k**4)
-ratio_to_sun = total_intensity / P_sun
-peak_wave_nm = (2.898e-3 / temp_k) * 1e9
-
-# 3. 數據分析顯示 (顯示於上方)
-st.subheader("📊 模擬結果")
-col1, col2 = st.columns(2)
-with col1:
-    st.metric("波峰波長 (Peak)", f"{peak_wave_nm:.1f} nm")
-    st.write(f"**總輻射強度:** \n {total_intensity:.2e} W/m²")
-with col2:
-    st.metric("相對於太陽光度比值", f"{ratio_to_sun:.3f} L☉")
-
-# 4. 繪圖準備
-waves_nm = np.linspace(300, 2000, 1000)
+# 2. 物理與生物曲線定義
+waves_nm = np.linspace(380, 780, 400) 
 waves_m = waves_nm * 1e-9
-with np.errstate(over='ignore', divide='ignore'):
-    intensity = (2 * h * c**2) / (waves_m**5 * (np.exp((h * c) / (waves_m * kB * temp_k)) - 1))
 
-# 模擬錐狀細胞敏感曲線公式
+def planck(w_m, T):
+    with np.errstate(over='ignore', divide='ignore'):
+        return (2 * h * c**2) / (w_m**5 * (np.exp((h * c) / (w_m * kB * T)) - 1))
+
 def cone_sensitivity(x, peak, width):
     return np.exp(-0.5 * ((x - peak) / width)**2)
 
-# 5. 繪製圖表
-fig, ax1 = plt.subplots(figsize=(10, 6))
+# 計算能量與敏感度
+intensity_vis = planck(waves_m, temp_k)
+s_sens = cone_sensitivity(waves_nm, 440, 30)
+m_sens = cone_sensitivity(waves_nm, 545, 40)
+l_sens = cone_sensitivity(waves_nm, 570, 45)
 
-# --- 左側 Y 軸：輻射強度 ---
-ax1.set_xlabel("Wavelength (nm)", fontsize=12)
-ax1.set_ylabel("Radiant Intensity (W/m²/m)", fontsize=12, color='black')
-ax1.plot(waves_nm, intensity, color='black', lw=3, label='Blackbody Spectrum', zorder=10)
-ax1.tick_params(axis='y', labelcolor='black')
+# --- 核心邏輯：計算重疊總面積 (積分) ---
+def get_integral(y, x):
+    # 相容新舊版本 NumPy
+    if hasattr(np, 'trapezoid'):
+        return np.trapezoid(y, x)
+    return np.trapz(y, x)
 
-# 🌈 繪製彩虹背景 (400-700nm)
-vis_min, vis_max = 400, 700
-for w in range(vis_min, vis_max):
-    color = plt.cm.rainbow((w - vis_min) / (vis_max - vis_min))
-    ax1.axvspan(w, w+1, color=color, alpha=0.15, lw=0)
+S_val = get_integral(intensity_vis * s_sens, waves_nm)
+M_val = get_integral(intensity_vis * m_sens, waves_nm)
+L_val = get_integral(intensity_vis * l_sens, waves_nm)
 
-# 📍 垂直虛線指出目前的坡峰位置
-ax1.axvline(peak_wave_nm, color='darkred', linestyle=':', lw=2, alpha=0.8, label=f'Peak ({peak_wave_nm:.1f}nm)')
+# 正規化比例 (以最強者為 1.0)
+max_val = max(S_val, M_val, L_val, 1e-10)
+S_norm, M_norm, L_norm = S_val/max_val, M_val/max_val, L_val/max_val
 
-# --- 右側 Y 軸：SML 相對敏感度 ---
+# 3. 顏色模擬 (RGB 映射)
+r = min(L_norm * 1.1, 1.0)
+g = min(M_norm * 1.0, 1.0)
+b = min(S_norm * 0.9, 1.0)
+hex_color = '#%02x%02x%02x' % (int(r*255), int(g*255), int(b*255))
+
+# 4. 數據分析顯示
+st.subheader("🔍 色彩解碼數據")
+c1, c2, c3 = st.columns(3)
+c1.metric("S 響應 (藍)", f"{S_norm:.3f}")
+c2.metric("M 響應 (綠)", f"{M_norm:.3f}")
+c3.metric("L 響應 (紅)", f"{L_norm:.3f}")
+
+st.markdown(f"""
+<div style="background-color: {hex_color}; height: 80px; border-radius: 10px; 
+            display: flex; align-items: center; justify-content: center;
+            border: 2px solid #333; color: {'black' if (r+g+b)>1.5 else 'white'}; font-weight: bold; font-size: 20px;">
+    模擬眼睛看到的顏色 (T={temp_k}K)
+</div>
+""", unsafe_allow_html=True)
+
+# 5. 繪製圖表 (優化記憶體管理)
+fig, ax1 = plt.subplots(figsize=(10, 5))
+ax1.set_xlabel("Wavelength (nm)")
+ax1.set_ylabel("Radiant Intensity", color='black')
+ax1.plot(waves_nm, intensity_vis, color='black', lw=3, label='Blackbody Spectrum')
+
+peak_nm = (2.898e-3 / temp_k) * 1e9
+ax1.axvline(peak_nm, color='darkred', ls=':', lw=2, label=f'Peak: {peak_nm:.1f}nm')
+
 ax2 = ax1.twinx()
-ax2.set_ylabel("Relative Sensitivity (0 to 1)", fontsize=12, color='gray')
-ax2.plot(waves_nm, cone_sensitivity(waves_nm, 570, 45), color='red', lw=1.5, ls='--', alpha=0.6)
-ax2.plot(waves_nm, cone_sensitivity(waves_nm, 545, 40), color='green', lw=1.5, ls='--', alpha=0.6)
-ax2.plot(waves_nm, cone_sensitivity(waves_nm, 440, 30), color='blue', lw=1.5, ls='--', alpha=0.6)
-ax2.tick_params(axis='y', labelcolor='gray')
+ax2.set_ylabel("Relative Sensitivity (0 to 1)", color='gray')
+ax2.plot(waves_nm, l_sens, color='red', ls='--', alpha=0.5)
+ax2.plot(waves_nm, m_sens, color='green', ls='--', alpha=0.5)
+ax2.plot(waves_nm, s_sens, color='blue', ls='--', alpha=0.5)
 
-# 🌟 標記位置優化：M 在左側，S 與 L 在右側
-label_y_pos = 1.0   # 設為 1.0 讓它跟峰值平齊
-offset_x = 12       # 偏移量 (nm)
+# 標籤位置：M 在左側，S 與 L 在右側 (不碰到線)
+label_y = 1.0
+offset_x = 12
+ax2.text(570 + offset_x, label_y, 'L', color='red', fontweight='bold', fontsize=14, ha='left', va='center')
+ax2.text(545 - offset_x, label_y, 'M', color='green', fontweight='bold', fontsize=14, ha='right', va='center')
+ax2.text(440 + offset_x, label_y, 'S', color='blue', fontweight='bold', fontsize=14, ha='left', va='center')
 
-# L (Long-wave)：標在 Peak 右側
-ax2.text(570 + offset_x, label_y_pos, 'L', color='red', fontweight='bold', fontsize=15, ha='left', va='center')
+ax2.set_ylim(0, 1.2)
+ax1.set_ylim(0, np.max(intensity_vis) * 1.35)
+ax1.set_xlim(350, 850)
+ax1.legend(loc='upper right', fontsize='small')
+ax1.grid(True, alpha=0.3)
 
-# M (Medium-wave)：標在 Peak 左側 (使用減號並設定 ha='right')
-ax2.text(545 - offset_x, label_y_pos, 'M', color='green', fontweight='bold', fontsize=15, ha='right', va='center')
-
-# S (Short-wave)：標在 Peak 右側
-ax2.text(440 + offset_x, label_y_pos, 'S', color='blue', fontweight='bold', fontsize=15, ha='left', va='center')
-
-# 設定軸範圍與美化
-ax1.set_xlim(350, 1500)
-ax1.set_ylim(0, np.max(intensity) * 1.25) # 預留空間給標籤
-ax2.set_ylim(0, 1.05) # 敏感度上限設為 1.05以騰出標籤空間
-ax1.grid(True, linestyle=':', alpha=0.5)
-
-# 合併圖例
-lines1, labels1 = ax1.get_legend_handles_labels()
-ax1.legend(lines1, labels1, loc='upper right', fontsize='small')
-
+# 渲染圖表並立即關閉以節省記憶體
 st.pyplot(fig)
+plt.close(fig) 
+
+
 
 # 6. 教學重點觀察 (依您的要求修改)
 st.markdown(f"""
