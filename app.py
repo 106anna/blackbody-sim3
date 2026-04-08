@@ -35,7 +35,7 @@ l_sens = cone_sensitivity(waves_nm, 570, 45)
 
 # --- 核心邏輯：計算重疊總面積 (積分) ---
 def get_integral(y, x):
-    # 相容新舊版本 NumPy，防止 AttributeError
+    # 相容新舊版本 NumPy，解決 AttributeError
     if hasattr(np, 'trapezoid'):
         return np.trapezoid(y, x)
     return np.trapz(y, x)
@@ -69,7 +69,8 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# 5. 繪製圖表 (雙 Y 軸)
+# 5. 繪製圖表
+# 使用 plt.subplots 建立圖表
 fig, ax1 = plt.subplots(figsize=(10, 5))
 ax1.set_xlabel("Wavelength (nm)")
 ax1.set_ylabel("Radiant Intensity", color='black')
@@ -84,7 +85,7 @@ ax2.plot(waves_nm, l_sens, color='red', ls='--', alpha=0.5)
 ax2.plot(waves_nm, m_sens, color='green', ls='--', alpha=0.5)
 ax2.plot(waves_nm, s_sens, color='blue', ls='--', alpha=0.5)
 
-# 標籤位置：M 在左側，S 與 L 在右側 (不碰到線)
+# 標籤位置：M 在左側，S 與 L 在右側
 label_y = 1.0
 offset_x = 12
 ax2.text(570 + offset_x, label_y, 'L', color='red', fontweight='bold', fontsize=14, ha='left', va='center')
@@ -97,8 +98,9 @@ ax1.set_xlim(350, 850)
 ax1.legend(loc='upper right', fontsize='small')
 ax1.grid(True, alpha=0.3)
 
-# 🚀 核心修正：顯示後立即關閉圖表物件，避免記憶體洩漏
+# 🚀 關鍵修復：顯示圖表
 st.pyplot(fig)
+# 🚀 關鍵修復：顯示後立即關閉 fig 物件以釋放記憶體
 plt.close(fig) 
 
 # --- 6. 教學資訊區 ---
