@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # 網頁基本設定：增加頁面快取與效能優化
-st.set_page_config(page_title="黑體輻射與色彩模擬器", layout="centered")
+st.set_page_config(page_title="黑體輻射：從能量到眼睛色彩", layout="centered")
 
 # --- 1. 物理常數與緩存計算 ---
 # 使用緩存：這些基礎曲線（SML）對所有人都是一樣的，算一次就好
