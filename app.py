@@ -28,7 +28,7 @@ def calculate_planck(temp_k, waves_nm):
 # --- 2. 啟動計算 ---
 waves_nm, s_sens, m_sens, l_sens = get_base_curves()
 
-st.title("🌡️ 黑體輻射：多人連線優化版")
+st.title("🌡️ 黑體輻射與人眼所見顏色")
 st.markdown("---")
 
 # 數值輸入
