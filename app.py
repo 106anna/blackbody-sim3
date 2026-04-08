@@ -28,7 +28,7 @@ def calculate_planck(temp_k, waves_nm):
 # --- 2. 啟動計算 ---
 waves_nm, s_sens, m_sens, l_sens = get_base_curves()
 
-st.title("🌡️ 黑體輻射與人眼所見顏色")
+st.title("🌡️ 黑體輻射與視覺顏色")
 st.markdown("---")
 
 # 數值輸入
@@ -65,7 +65,7 @@ st.markdown(f"""
 <div style="background-color: {hex_color}; height: 80px; border-radius: 10px; 
             display: flex; align-items: center; justify-content: center;
             border: 2px solid #333; color: {'black' if (r+g+b)>1.5 else 'white'}; font-weight: bold; font-size: 20px;">
-    模擬視覺色彩 (T={temp_k}K)
+    模擬黑體輻射與視覺色彩 (T={temp_k}K)
 </div>
 """, unsafe_allow_html=True)
 
